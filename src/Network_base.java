@@ -1,8 +1,5 @@
-import java.io.File;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.Scanner;
 
 // 課題:
 //// ・重み付きネットワークに対応していない(7/28にて改善)
@@ -42,10 +39,10 @@ public class Network_base implements Cloneable{
 	int[][] list;
 	int[] degree;
 	double[] weight;
-	boolean directed;
-	boolean doubleCount;
-	boolean weighted;
-	boolean success = true; //基本true サブクラス次第でfalseにもなる
+//	boolean directed;
+//	boolean doubleCount;
+//	boolean weighted;
+//	boolean success = true; //基本true サブクラス次第でfalseにもなる
 
 	double degreeCorrelationCoefficient;
 	double DCC_divider; //次数相関係数の分母
@@ -67,10 +64,10 @@ public class Network_base implements Cloneable{
 	boolean[] visitedEdge_onRW = null;
 
 
-	// setLabel(String inputFilePath)メソッドを実行することでラベル設定を読み込むことができる
-	String[] nodeLabel;
-	// 直接この変数にアクセスして、手動で定義して利用する。
-	String[] edgeLabel;
+//	// setLabel(String inputFilePath)メソッドを実行することでラベル設定を読み込むことができる
+//	String[] nodeLabel;
+//	// 直接この変数にアクセスして、手動で定義して利用する。
+//	String[] edgeLabel;
 
 	// ConnectedCompornentにより生成される変数
 	int count_cc;
@@ -82,8 +79,6 @@ public class Network_base implements Cloneable{
 	ArrayList<ArrayList<Node>> CompNDI_Member;
 	int maxCC_NID;
 
-	// パーコレーション等により頂点数が変化するとき用の頂点リスト
-	private ArrayList<Integer> existNodeList = new ArrayList<Integer>();
 
 	// MinimumSpanningTreeメソッドで作成された最小生成木の頂点Indexリスト
 	ArrayList<Integer> MST_Nodes = new ArrayList<Integer>();
@@ -98,200 +93,14 @@ public class Network_base implements Cloneable{
 	int[][] SPT_list;
 
 
-	/** 隣接リストをコンソールへプリント */
-	public void printList(){
-		if(success)
-			for(int i=0;i<list.length;i++){
-				System.out.println(list[i][0] + "," + list[i][1]);
-			}
-		else
-			System.out.println("生成に失敗しているため表示できません。");
-	}
 
-	/** 隣接リストをcsv形式で保存 */
-	public void printList(String fileName){
-		PrintWriter pw;
-		if(success){
-			try{
-				pw = new PrintWriter(new File(fileName));
-				for(int i=0;i<list.length;i++){
-					pw.println(list[i][0] + "," + list[i][1]);
-				}
-				pw.close();
-			}catch(Exception e){
-				System.out.println(e);
-			}
-		}else{
-			System.out.println("生成に失敗しているため表示できません。");
-		}
-	}
 
-	/**
-	 * 平均次数を返す
-	 */
-	public double averageDegree() {
-		double sumDegree = 0.0;
-		for(int i=0;i<degree.length;i++) {
-			sumDegree += degree[i];
-		}
-		return (sumDegree/(double)degree.length);
-	}
 
-	/** 隣接リストをcsv形式で保存
-	次数0などの特別な頂点に対応(nodeListを定義しないと使えない) */
-	public void printListExtention(String fileName){
-		PrintWriter pw;
-		if(success) {
-			if(existNodeList.size()>0) {
-				try{
-					pw = new PrintWriter(new File(fileName));
-					for(int i=0 ; i<existNodeList.size() ; i++){
-						pw.println(existNodeList.get(i));
-					}
-					for(int i=0;i<list.length;i++){
-						pw.println(list[i][0] + "," + list[i][1]);
-					}
-					pw.close();
-				}catch(Exception e){
-					System.out.println(e);
-				}
-			}else {
-				try{
-					pw = new PrintWriter(new File(fileName));
-					for(int i=0 ; i<N ; i++){
-						pw.println(i);
-					}
-					for(int i=0;i<list.length;i++){
-						pw.println(list[i][0] + "," + list[i][1]);
-					}
-					pw.close();
-				}catch(Exception e){
-					System.out.println(e);
-				}
-			}
-		}else{
-			System.out.println("条件を満たさないため表示できません。");
-		}
 
-	}
 
-	// sort()メソッドのためのメソッド
-	private int[][] quickSort(int[][] list,int low,int high, int level){
-		int space1,space2;
-		if(low<high){
-			int mid = (low + high)/2;
-			int x = list[mid][level];
-			int i=low;
-			int j=high;
-			while(i<=j){
-				while(list[i][level] < x) i++;
-				while(list[j][level] > x) j--;
-				if(i<=j){
-					space1=list[i][0]; space2=list[i][1];
-					list[i][0]=list[j][0]; list[i][1]=list[j][1];
-					list[j][0]=space1; list[j][1]=space2;
-					i++; j--;
-				}
-			}
-			quickSort(list,low,j,level);
-			quickSort(list,i,high,level);
-		}
-		return list;
-	}
 
-	/** 隣接リストを辞書式順序(昇順)へ整列 */
-	public void sort(){
-		if(success){
-			if(doubleCount) quickSort(list,0,M*2-1,0);
-			else quickSort(list,0,M-1,0);
-			int low=0;
-			int high=0;
-			sortLevel2 : for(int n=0 ; n<N ; n++){
-				while(list[high][0] == n){
-					high++;
-					if(high == M)break sortLevel2;
-				}
-				if( (high-low) > 1){
-					quickSort(list,low,high-1,1);
-				}
-				low = high;
-			}
-		}else{
-			System.out.println("生成に失敗しているためソートできません。");
-		}
-	}
 
-	/** このメソッドを実行することで<br>
-	 * 頂点のリストnodeListを使うことができる。<br>
-	 * (注):doubleCountが偽のときはsetNode(boolean input_doubleCount)を使うこと<br>*/
-	public void setNode(){
-		nodeList.clear();
-		// 隣接リストを辞書式順序(昇順)へ整列
-		sort();
 
-		// Nodeを初期化しnodeListへ追加する
-		for(int n=0;n<N;n++){
-			nodeList.add( new Node(n) );
-		}
-
-		//各Nodeの隣接リストを定義
-		int currentEdge = 0;
-		for(int n=0;n<N;n++){
-			for(int i=0;i<degree[n];i++){
-				nodeList.get(n).list.add(nodeList.get(list[currentEdge+i][1]));
-			}
-			currentEdge += degree[n];
-		}
-	}
-	/** setNode()ではdoubleCountが偽のときの
-	 * 動作がおかしかった。それを修正するためのオーバーロード*/
-	public void setNode(boolean input_doubleCount){
-		nodeList.clear();
-		// 隣接リストを辞書式順序(昇順)へ整列
-		sort();
-
-		// Nodeを初期化しnodeListへ追加する
-		for(int n=0;n<N;n++){
-			nodeList.add( new Node(n) );
-		}
-
-		//各Nodeの隣接リストを定義
-		if(input_doubleCount){
-			int currentEdge = 0;
-			for(int n=0;n<N;n++){
-				for(int i=0;i<degree[n];i++){
-					nodeList.get(n).list.add(nodeList.get(list[currentEdge+i][1]));
-				}
-				currentEdge += degree[n];
-			}
-		}else{
-			for(int m=0;m<M;m++){
-				nodeList.get(list[m][0]).list.add(nodeList.get(list[m][1]));
-				nodeList.get(list[m][1]).list.add(nodeList.get(list[m][0]));
-			}
-		}
-	}
-
-	/** このメソッドを実行することで<br>
-	 * 辺のリストedgeListを使うことができる。<br>
-	 * 頂点について、所有する辺のリストeListを使うことができる。<br>
-	 * (注)<br>
-	 * list[][]が定義されている場合のみ使用可能<br>
-	 * さらにsetNode()またはsetNode(false)適用後でないと使えない<br>
-	 * */
-	public void setEdge(){
-		edgeList.clear();
-		Edge currentEdge = null;
-		for(int i=0;i<M;i++){
-			// 現在のループで扱う辺
-			currentEdge = new Edge(list[i][0],list[i][1],i);
-			// edgeListへ登録
-			edgeList.add(currentEdge);
-			// eListへ登録
-			nodeList.get(list[i][0]).eList.add(currentEdge);
-			nodeList.get(list[i][1]).eList.add(currentEdge);
-		}
-	}
 	/**
 	 *
 	 */
@@ -323,49 +132,7 @@ public class Network_base implements Cloneable{
 		}
 	}
 
-	/** csvファイルを読み込みラベルを割り当てるメソッド
-	 * 書式は「(頂点番号),(ラベル名)」を1行ずつ羅列させていく
-	 * ※ 頂点間の区切りは原則カンマとするが、スペースやタブでも対応できるようにしておく。
-	 * ！ 読み込みファイルは書き方を誤ると想定しないエラーが起こりやすいので注意 ！
-	 */
-	public void setLabel(String inputFilePath){
-		Scanner scan = null;
-		nodeLabel = new String[N];
-		String punctuation = "";
-		String currentLine;
-		int pancPos;
-		try{
-			scan = new Scanner(new File(inputFilePath));
 
-			// 区切り文字の識別
-			currentLine = scan.nextLine(); //1行目のみwhileループ外で行う
-			if(currentLine.indexOf(",") > -1){
-				punctuation = ",";
-			}else if(currentLine.indexOf(" ") > -1){
-				punctuation = " ";
-			}else if(currentLine.indexOf("\t") > -1){
-				punctuation = "\t";
-			}else{
-				scan.close();
-				throw new Exception();
-			}
-
-			// 読み込みファイル1行目のみループ外で処理する
-			pancPos = currentLine.indexOf(punctuation);
-			nodeLabel[Integer.parseInt(currentLine.substring(0, pancPos))] = currentLine.substring(pancPos+1);
-
-			// ループ開始
-			while(scan.hasNextLine()){
-				currentLine = scan.nextLine();
-				pancPos = currentLine.indexOf(punctuation);
-				nodeLabel[Integer.parseInt(currentLine.substring(0, pancPos))] = currentLine.substring(pancPos+1);
-			}
-
-			scan.close();
-		}catch(Exception e){
-			System.out.println(e);
-		}
-	}
 
 	/**
 	 * 頂点vの隣接頂点の配列を返す
@@ -431,7 +198,6 @@ public class Network_base implements Cloneable{
 			count_cc++;
 			ccMember.add(currentMamberList);
 		}
-
 	}
 
 	/**
@@ -571,169 +337,169 @@ public class Network_base implements Cloneable{
 
 	}
 
-	/** サイト・パーコレーションを実行 */
-	public void SitePercolation(double f){
-		if(success){
-			double x;
-			int newM=0;
-			ArrayList<Integer> vacantNodeList = new ArrayList<Integer>();
-			int[] vacantNodeBinary = new int[N];
-			for(int i=0;i<N;i++) vacantNodeBinary[i]=0;
-			int currentLink=0;
-			int[][] newList = new int[list.length][2];
-			boolean occupied = true;
-			for(int n=0 ; n<N ; n++){
-				x = Math.random();
-				// 非占有状態( !(x<f) のとき)なら次を実行
-				if( !(x<f) ){
-					vacantNodeList.add(n);
-					vacantNodeBinary[n]=1;
-				}else{
-					existNodeList.add(n);
-				}
-			}
-			for(int n=0;n<N;n++){
-				if(vacantNodeBinary[n]==1){
-					// ノードが空ならば無視し
-					// ポインタを次の頂点へ移す
-					currentLink += degree[n];
-				}else{
-					// 現在の辺の存在を判定
-					// 以下、頂点nの次数の分、辺をループ
-					for(int m=currentLink;m<(currentLink+degree[n]);m++){
-						// 以下、空のノードリストと比較
-						for(int i=0;i<vacantNodeList.size();i++){
-							occupied = true;
-							if(list[m][1]==vacantNodeList.get(i)){
-								occupied = false;
-								break;
-							}
-							if(list[m][1]<vacantNodeList.get(i)){
-								break;
-							}
-						}
-						if(occupied){
-							newList[newM][0] = list[m][0];
-							newList[newM][1] = list[m][1];
-							newM++;
-						}
-					}
-					currentLink += degree[n];
-				}
-			}
-			// newListをlistへコピー(配列の長さはnewMへ制限)
-			list = new int[newM][2];
-			for(int m=0 ; m<newM ; m++){
-				list[m][0] = newList[m][0];
-				list[m][1] = newList[m][1];
-			}
-
-			// 変数更新
-			if(directed) M=newM;
-			else M=(newM/2);
-
-
-		}else{
-			System.out.println("生成に失敗しているためパーコレーションできません。");
-		}
-	}
-
-	/** ボンド・パーコレーションを実行<br>
-	 * 確率fで残り、1-fで故障<br>
-	 * 無向,ダブルカウントのとき不具合があるかも？(16/12/14)<br>
-	 * 次数を更新させる処理を追加(17/07/05)<br>
-	 * */
-	public void BondPercolation(double f){
-		if(success){
-			double x;
-			int newM=0;
-			int[] newDegree = new int[N];
-			int[][] newList = new int[list.length][2];
-			for(int m=0 ; m<list.length ; m++){
-				x = Math.random();
-				// 占有状態( x<f のとき)なら次を実行
-				if(x<f){
-					newList[newM][0] = list[m][0];
-					newList[newM][1] = list[m][1];
-					newDegree[ newList[newM][0] ]++;
-					newDegree[ newList[newM][1] ]++;
-					System.out.println(newDegree[ newList[newM][0] ]);
-					newM++;
-				}
-			}
-			// newListをlistへコピー(配列の長さはnewMへ制限)
-			list = new int[newM][2];
-			for(int m=0 ; m<newM ; m++){
-				list[m][0] = newList[m][0];
-				list[m][1] = newList[m][1];
-			}
-			// degree更新
-			for(int i=0 ; i<N ; i++){
-				degree[i] = newDegree[i];
-			}
-
-			// 変数更新
-			if(directed) M=newM;
-			else M=(newM/2);
-		}else{
-			System.out.println("生成に失敗しているためパーコレーションできません。");
-		}
-	}
-
-	/** 探索アルゴリズムを実行し結果をプリント */
-	public int SearchAlgorithm(boolean print){
-		if(success){
-			// nodeListが未定義のときここで定義される
-			// (nodeListはサイト・パーコレーション メソッドにて定義されている変数)
-			if(existNodeList.isEmpty()){
-				for(int i=0;i<N;i++) existNodeList.add(i);
-			}
-
-			// 探索用変数
-			int[] vis = new int[N];
-			int currentVis = 0;
-			int currentNode;
-			for(int i=0;i<N;i++) vis[i]=0;
-			ArrayList<Integer> queue = new ArrayList<Integer>();
-
-			// プロット用変数
-			int compN = 0;
-			int nodes;
-			int maxNodes=0;
-
-			// 探索部分
-			for(int i=0;i<existNodeList.size();i++){
-				if(vis[existNodeList.get(i)]==0){
-					nodes=0;
-					compN++;
-					queue.add(existNodeList.get(i));
-					vis[existNodeList.get(i)] = (++currentVis);
-					nodes++;
-					while(!queue.isEmpty()){
-						currentNode = queue.get(0);
-						queue.remove(0);
-
-						for(int k=0;k<list.length;k++){
-							if(list[k][0]==currentNode && vis[list[k][1]]==0){
-								queue.add(list[k][1]);
-								vis[list[k][1]] = (++currentVis);
-								nodes++;
-							}
-						}
-					}
-					maxNodes = Math.max(maxNodes, nodes);
-				}
-			}
-			if(print){
-				System.out.println("連結成分数=" + compN);
-				System.out.println("最大連結成分の頂点数=" + maxNodes);
-			}
-			return maxNodes;
-		}else{
-			System.out.println("生成に失敗しているため探索できません。");
-			return 0;
-		}
-	}
+//	/** サイト・パーコレーションを実行 */
+//	public void SitePercolation(double f){
+//		if(success){
+//			double x;
+//			int newM=0;
+//			ArrayList<Integer> vacantNodeList = new ArrayList<Integer>();
+//			int[] vacantNodeBinary = new int[N];
+//			for(int i=0;i<N;i++) vacantNodeBinary[i]=0;
+//			int currentLink=0;
+//			int[][] newList = new int[list.length][2];
+//			boolean occupied = true;
+//			for(int n=0 ; n<N ; n++){
+//				x = Math.random();
+//				// 非占有状態( !(x<f) のとき)なら次を実行
+//				if( !(x<f) ){
+//					vacantNodeList.add(n);
+//					vacantNodeBinary[n]=1;
+//				}else{
+//					existNodeList.add(n);
+//				}
+//			}
+//			for(int n=0;n<N;n++){
+//				if(vacantNodeBinary[n]==1){
+//					// ノードが空ならば無視し
+//					// ポインタを次の頂点へ移す
+//					currentLink += degree[n];
+//				}else{
+//					// 現在の辺の存在を判定
+//					// 以下、頂点nの次数の分、辺をループ
+//					for(int m=currentLink;m<(currentLink+degree[n]);m++){
+//						// 以下、空のノードリストと比較
+//						for(int i=0;i<vacantNodeList.size();i++){
+//							occupied = true;
+//							if(list[m][1]==vacantNodeList.get(i)){
+//								occupied = false;
+//								break;
+//							}
+//							if(list[m][1]<vacantNodeList.get(i)){
+//								break;
+//							}
+//						}
+//						if(occupied){
+//							newList[newM][0] = list[m][0];
+//							newList[newM][1] = list[m][1];
+//							newM++;
+//						}
+//					}
+//					currentLink += degree[n];
+//				}
+//			}
+//			// newListをlistへコピー(配列の長さはnewMへ制限)
+//			list = new int[newM][2];
+//			for(int m=0 ; m<newM ; m++){
+//				list[m][0] = newList[m][0];
+//				list[m][1] = newList[m][1];
+//			}
+//
+//			// 変数更新
+//			if(directed) M=newM;
+//			else M=(newM/2);
+//
+//
+//		}else{
+//			System.out.println("生成に失敗しているためパーコレーションできません。");
+//		}
+//	}
+//
+//	/** ボンド・パーコレーションを実行<br>
+//	 * 確率fで残り、1-fで故障<br>
+//	 * 無向,ダブルカウントのとき不具合があるかも？(16/12/14)<br>
+//	 * 次数を更新させる処理を追加(17/07/05)<br>
+//	 * */
+//	public void BondPercolation(double f){
+//		if(success){
+//			double x;
+//			int newM=0;
+//			int[] newDegree = new int[N];
+//			int[][] newList = new int[list.length][2];
+//			for(int m=0 ; m<list.length ; m++){
+//				x = Math.random();
+//				// 占有状態( x<f のとき)なら次を実行
+//				if(x<f){
+//					newList[newM][0] = list[m][0];
+//					newList[newM][1] = list[m][1];
+//					newDegree[ newList[newM][0] ]++;
+//					newDegree[ newList[newM][1] ]++;
+//					System.out.println(newDegree[ newList[newM][0] ]);
+//					newM++;
+//				}
+//			}
+//			// newListをlistへコピー(配列の長さはnewMへ制限)
+//			list = new int[newM][2];
+//			for(int m=0 ; m<newM ; m++){
+//				list[m][0] = newList[m][0];
+//				list[m][1] = newList[m][1];
+//			}
+//			// degree更新
+//			for(int i=0 ; i<N ; i++){
+//				degree[i] = newDegree[i];
+//			}
+//
+//			// 変数更新
+//			if(directed) M=newM;
+//			else M=(newM/2);
+//		}else{
+//			System.out.println("生成に失敗しているためパーコレーションできません。");
+//		}
+//	}
+//
+//	/** 探索アルゴリズムを実行し結果をプリント */
+//	public int SearchAlgorithm(boolean print){
+//		if(success){
+//			// nodeListが未定義のときここで定義される
+//			// (nodeListはサイト・パーコレーション メソッドにて定義されている変数)
+//			if(existNodeList.isEmpty()){
+//				for(int i=0;i<N;i++) existNodeList.add(i);
+//			}
+//
+//			// 探索用変数
+//			int[] vis = new int[N];
+//			int currentVis = 0;
+//			int currentNode;
+//			for(int i=0;i<N;i++) vis[i]=0;
+//			ArrayList<Integer> queue = new ArrayList<Integer>();
+//
+//			// プロット用変数
+//			int compN = 0;
+//			int nodes;
+//			int maxNodes=0;
+//
+//			// 探索部分
+//			for(int i=0;i<existNodeList.size();i++){
+//				if(vis[existNodeList.get(i)]==0){
+//					nodes=0;
+//					compN++;
+//					queue.add(existNodeList.get(i));
+//					vis[existNodeList.get(i)] = (++currentVis);
+//					nodes++;
+//					while(!queue.isEmpty()){
+//						currentNode = queue.get(0);
+//						queue.remove(0);
+//
+//						for(int k=0;k<list.length;k++){
+//							if(list[k][0]==currentNode && vis[list[k][1]]==0){
+//								queue.add(list[k][1]);
+//								vis[list[k][1]] = (++currentVis);
+//								nodes++;
+//							}
+//						}
+//					}
+//					maxNodes = Math.max(maxNodes, nodes);
+//				}
+//			}
+//			if(print){
+//				System.out.println("連結成分数=" + compN);
+//				System.out.println("最大連結成分の頂点数=" + maxNodes);
+//			}
+//			return maxNodes;
+//		}else{
+//			System.out.println("生成に失敗しているため探索できません。");
+//			return 0;
+//		}
+//	}
 
 	/**
 	 * 2017-8版 サイトパーコレーション<br>
@@ -2936,12 +2702,8 @@ public class Network_base implements Cloneable{
 
 		}
 
-		// Node, Edgeデータを再構成
-		nodeList.clear();
-		edgeList.clear();
-		if(M==list.length) setNode(false);
-		else setNode();
-		setEdge();
+		// neightborListを再構成
+		if(neightborList != null) setNeightbor();
 	}
 
 	public void EdgeRewiring() {
@@ -2969,16 +2731,12 @@ public class Network_base implements Cloneable{
 		net.M = newM;
 		net.list = new int[newM][2];
 		net.weight = new double[newM];
-		net.edgeLabel = new String[newM]; //フィルタリング前のindexを記憶
-		boolean this_is_original = (edgeLabel==null);
 		int currentLine = 0;
 		for(int i=0;i<M;i++) {
 			if(exists[i]) {
 				net.list[currentLine][0] = list[i][0];
 				net.list[currentLine][1] = list[i][1];
 				net.weight[currentLine] = 1.0;
-				if(this_is_original) net.edgeLabel[currentLine] = Integer.toString(i);
-				else net.edgeLabel[currentLine] = edgeLabel[i];
 				currentLine++;
 			}else {
 				net.degree[list[i][0]]--;
