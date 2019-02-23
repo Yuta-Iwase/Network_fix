@@ -59,6 +59,15 @@ public class Network {
 	 */
 	int[] linkSalience;
 
+
+	/**
+	 * このネットワークが正しく生成されているのか、判定する真偽値<br>
+	 * 主にconfigurationで用いる。<br>
+	 */
+	boolean success;
+
+
+
 	/** 辺リストをコンソールへプリント */
 	public void exec_printEdgeList(){
 		for(int i=0;i<edgeList.length;i++){
