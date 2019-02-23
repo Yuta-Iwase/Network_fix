@@ -48,7 +48,8 @@ public class Network {
 
 	// Direct,In-direct破壊でのN,D,I,DI,NIの各連結成分データ
 	// TODO ここ書き直し
-	ArrayList<ArrayList<Integer>> CompNDI_Member;
+	ArrayList<ArrayList<Integer>> compNDI_Member;
+	int LCCsize_NID;
 
 	/**
 	 * calc_linkSalience()メソッドを実行することで数値が与えられる。<br>
@@ -59,7 +60,7 @@ public class Network {
 	int[] linkSalience;
 
 	/** 辺リストをコンソールへプリント */
-	public void printEdgeList(){
+	public void exec_printEdgeList(){
 		for(int i=0;i<edgeList.length;i++){
 			System.out.println(edgeList[i][0] + "," + edgeList[i][1]);
 		}
@@ -69,7 +70,7 @@ public class Network {
 	 * 辺リストをカンマ区切りのテキストとしてファイルに保存<br>
 	 * @param fileName 書き込みたいファイルのパス
 	 */
-	public void printEdgeList(String fileName){
+	public void exec_printEdgeList(String fileName){
 		PrintWriter pw;
 		try{
 			pw = new PrintWriter(new File(fileName));
@@ -85,7 +86,7 @@ public class Network {
 	/**
 	 * edgeListを基にneightborList, addressList, neightborIndexListを定義する関数。
 	 */
-	public void setNeightbor(){
+	public void set_neightbor(){
 		// addressList初期化
 		addressList = new int[N];
 		addressList[0] = 0;
@@ -116,7 +117,7 @@ public class Network {
 	/**
 	 * 連結成分の解析を行う。<br>
 	 */
-	public void calc_ConnectedCompornent() {
+	public void calc_connectedCompornent() {
 		ccCount = 0;
 		ccIDList = new int[N];
 
@@ -159,24 +160,76 @@ public class Network {
 	}
 
 
+
+
+
 	/**
-	 * 連鎖故障のメソッドSitePercolation2018での連結成分を調べる。
+	 * 「Observability transitions in clustered networks」用にサイトパーコレーションを拡張したメソッド<br>
+	 * 通常のパーコレーションの処理に加え、連鎖故障の処理を加えている。<br>
+	 * 連鎖故障をしたければ、引数名chainをtrueにすれば良い。<br>
+	 * 逆にchainをfalseにすれば、通常のサイトパーコレーションになる。<br>
+	 * <b>(注1)</b>neightborListを定義していないと、実行することはできません。<br>
+	 * <b>(注2)</b>このメソッドでは、故障情報directDeleted, indirectDeletedを計算しているだけで、
+	 * 		実際にデータから頂点データが失われるわけではない。<br>
+	 * @param f 故障確率
+	 * @param chain 連鎖故障させるか?
 	 */
-	public void ConnectedCompornentNDI(boolean compN,boolean compD,boolean compI) {
+	public void exec_sitePercolationNDI(double f,boolean chain) {
+		// D,I情報初期化
+		for(int i=0;i<N;i++) {
+			directDeleted[i] = false;
+			indirectDeleted[i] = false;
+		}
+		// D情報を計算。連鎖故障フラグ(boolean chain)がtrueなら、I情報も計算。
+		for(int i=0;i<N;i++) {
+			int currentNode = i;
+			if(Math.random() < f) {
+				directDeleted[currentNode] = true;
+				if(chain) {
+					for(int j=0;j<degree[currentNode];j++) {
+						int neighborNode = neightborList[addressList[currentNode]+j];
+						indirectDeleted[neighborNode] = true;
+					}
+				}
+			}
+		}
+		// 現状、D=trueかつI=trueであることがある。
+		// その場合、D=true,I=falseとする。
+		for(int i=0;i<N;i++) {
+			int currentNode = i;
+			if(directDeleted[currentNode] && indirectDeleted[currentNode]) {
+				indirectDeleted[currentNode] = false;
+			}
+		}
+	}
+
+
+
+	/**
+	 * メソッドexec_sitePercolationNDIで計算したN,D,I情報を基に、それらでできる連結成分を解析する。<br>
+	 * 3つのフラグcompN, compD, compIにより探索する連結成分を決める。<br>
+	 * 例えば、compN=true, compD=false, compI=falseならNコンポーネントを計算する。<br>
+	 * compN=false, compD=true, compI=trueならDIコンポーネントを計算する。<br>
+	 * @param compN
+	 * @param compD
+	 * @param compI
+	 */
+	public void calc_connectedCompornentNDI(boolean compN, boolean compD, boolean compI) {
+		// 変数codeで引数の情報を整理する。
 		int code = 0;
 		if(compN) code += 4;
 		if(compD) code += 2;
 		if(compI) code += 1;
 		boolean valid = true;
-		CompNDI_Member = new ArrayList<>();
+		compNDI_Member = new ArrayList<>();
 
 		switch(code) {
 		case 0:
-			System.out.println("不正な引数です。");
+			System.out.println("不正な引数です。すべてがfalseになっています。");
 			valid=false;
 			break;
 		case 6:
-			System.out.println("不正な引数です。");
+			System.out.println("不正な引数です。NとDが隣接することはないです。");
 			valid=false;
 			break;
 		case 7:
@@ -186,6 +239,7 @@ public class Network {
 			break;
 		}
 
+		LCCsize_NID = 0;
 		if(valid) {
 			boolean[] visitList = new boolean[N];
 			for(int i=0;i<N;i++) visitList[i]=true;
@@ -239,7 +293,8 @@ public class Network {
 						}
 					}
 				}
-				CompNDI_Member.add(currentMamberList);
+				compNDI_Member.add(currentMamberList);
+				if(LCCsize_NID < currentMamberList.size()) LCCsize_NID = currentMamberList.size();
 			}
 		}
 
@@ -261,7 +316,7 @@ public class Network {
 		}
 		if(neightborList==null || neightborList.length<=0) {
 			System.out.println("neightborListが正しく定義されていません。"
-					+ "このメソッドより前にsetNeightbor()を実行してください。プログラムを終了します。");
+					+ "このメソッドより前にset_neightbor()を実行してください。プログラムを終了します。");
 			System.exit(1);
 		}
 
