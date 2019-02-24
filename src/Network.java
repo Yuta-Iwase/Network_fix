@@ -338,6 +338,58 @@ public class Network {
 		}
 	}
 
+
+
+	public void BiasedRandomWalk(int step, double alpha, double teleportP, long seed) {
+		Random rnd = new Random(seed);
+
+		double[] newWeight = new double[M];
+		for(int i=0;i<M;i++) newWeight[i]=1.0;
+
+		int currentNode = rnd.nextInt(N);
+		for(int t=0;t<step;t++){
+			if(degree[currentNode]>=1) {
+				// ここが各ランダムウォークで変化する内容(辺の選択方法)
+				double sumPoweredDegree = 0.0;
+				for(int i=0;i<degree[currentNode];i++){
+					int currentNeightbor = neightborList[addressList[currentNode]+i];
+					sumPoweredDegree += Math.pow(degree[currentNeightbor], alpha);
+				}
+				double r = sumPoweredDegree*rnd.nextDouble();
+				int selectedEdge = 0;
+				double threshold = Math.pow(degree[neightborList[addressList[currentNode]]], alpha);
+				while(r > threshold){
+					selectedEdge++;
+					threshold += Math.pow(degree[neightborList[addressList[currentNode]+selectedEdge]], alpha);
+				}
+
+				// 加重
+				int throughEdgeIndex = neightborIndexList[addressList[currentNode]+selectedEdge];
+				newWeight[throughEdgeIndex] += 1.0;
+
+				// 隣接点へ遷移
+				currentNode = neightborList[addressList[currentNode]+selectedEdge];
+			}else {
+				// 次数0なら確定ワープ
+				t--;
+				currentNode = rnd.nextInt(N);
+				continue;
+			}
+
+			// テレポート判定
+			if(Math.random() < teleportP){
+				currentNode = rnd.nextInt(N);
+			}
+
+		}
+
+		for(int i=0;i<M;i++){
+			weight[i] = newWeight[i];
+		}
+	}
+
+
+
 	/**
 	 * 重みに僅かなブレwidth分ブレさせる
 	 */
