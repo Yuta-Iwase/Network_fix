@@ -1,34 +1,37 @@
-// 2017/05/31
-// ・独立したクラスではなく呼び出しに対応できるクラスに変更した。
+
 
 public class MakePowerLaw {
+	/** 次数列 */
 	int[] degree;
 
+	/** 生成時に使用する変数 */
 	int N;
 	double gamma;
 	int minDegree,maxDegree;
-
 	double[] c;
 
-	public MakePowerLaw(int input_N,double input_gamma,int input_minDegree,int input_maxDegree) {
-		N = input_N;
-		gamma = input_gamma;
-		minDegree = input_minDegree;
-		maxDegree = input_maxDegree;
-
+	/**
+	 * 頂点数N, べき指数gamma, 最小次数minDegree, 最大次数maxDegreeの次数列を生成する。<br>
+	 * 次数列へのアクセスは、このオブジェクトのint[] degreeを取得すればよい。
+	 * @param N 頂点数
+	 * @param gamma べき指数
+	 * @param minDegree 最小次数
+	 * @param maxDegree 最大次数
+	 */
+	public MakePowerLaw(int N, double gamma, int minDegree, int maxDegree) {
+		// 変数代入
+		this.N = N;
+		this.gamma = gamma;
+		this.minDegree = minDegree;
+		this.maxDegree = maxDegree;
+		// 生成
 		generate();
 	}
 
-
-	public MakePowerLaw(int input_N,double input_gamma) {
-		N = input_N;
-		gamma = input_gamma;
-		minDegree = 2;
-		maxDegree = N-1;
-
-		generate();
-	}
-
+	/**
+	 * 次数列を生成するメソッド。<br>
+	 * このオブジェクトはコンストラクタの時点で次数列を生成しているが、なんらかの原因で再度生成しなくてはいけないときは、これを使う。<br>
+	 */
 	public void generate(){
 		// 離散量の確率分布を定義
 		double[] p = new double[maxDegree+1];
@@ -38,8 +41,9 @@ public class MakePowerLaw {
 			sum += p[i];
 		}
 		// 規格化
+		double inv_sum = 1.0/sum;
 		for(int i=minDegree;i<maxDegree;i++){
-			p[i] /= sum;
+			p[i] *= inv_sum;
 		}
 
 		// p[i]の累積分布c[i]を定義
@@ -70,20 +74,13 @@ public class MakePowerLaw {
 
 	}
 
-	// 完成した次数列degree[i]を出力
+	/**
+	 * 次数列をプロット
+	 */
 	public void printList(){
 		for(int i=0;i<N;i++){
 			System.out.println(i + "\t" + degree[i]);
 		}
-	}
-
-	public double averageDegree() {
-		double average = 0.0;
-		average += minDegree * (c[minDegree]-0);
-		for(int k=minDegree+1 ; k<=maxDegree ; k++) {
-			average += k*(c[k]-c[k-1]);
-		}
-		return average;
 	}
 
 }

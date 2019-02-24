@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Network {
 
@@ -48,8 +49,8 @@ public class Network {
 
 	// Direct,In-direct破壊でのN,D,I,DI,NIの各連結成分データ
 	// TODO ここ書き直し
-	ArrayList<ArrayList<Integer>> compNDI_Member;
-	int LCCsize_NID;
+	ArrayList<ArrayList<Integer>> ccMember_NDI;
+	int max_ccSize_NDI;
 
 	/**
 	 * calc_linkSalience()メソッドを実行することで数値が与えられる。<br>
@@ -77,6 +78,7 @@ public class Network {
 
 	/**
 	 * 辺リストをカンマ区切りのテキストとしてファイルに保存<br>
+	 * このメソッドで保存したcsvファイルはgephiで開くことができる。<br>
 	 * @param fileName 書き込みたいファイルのパス
 	 */
 	public void exec_printEdgeList(String fileName){
@@ -230,7 +232,7 @@ public class Network {
 		if(compD) code += 2;
 		if(compI) code += 1;
 		boolean valid = true;
-		compNDI_Member = new ArrayList<>();
+		ccMember_NDI = new ArrayList<>();
 
 		switch(code) {
 		case 0:
@@ -248,7 +250,7 @@ public class Network {
 			break;
 		}
 
-		LCCsize_NID = 0;
+		max_ccSize_NDI = 0;
 		if(valid) {
 			boolean[] visitList = new boolean[N];
 			for(int i=0;i<N;i++) visitList[i]=true;
@@ -302,13 +304,39 @@ public class Network {
 						}
 					}
 				}
-				compNDI_Member.add(currentMamberList);
-				if(LCCsize_NID < currentMamberList.size()) LCCsize_NID = currentMamberList.size();
+				ccMember_NDI.add(currentMamberList);
+				if(max_ccSize_NDI < currentMamberList.size()) max_ccSize_NDI = currentMamberList.size();
 			}
 		}
 
 	}
 
+	/**
+	 * 重みw_{ij}を、w_{ij} \propto {k_i k_j}^alphaになるように割り振る。
+	 * @param alpha 相関の強度
+	 */
+	public void set_weightToAlpha(double alpha){
+		weight = new double[M];
+		for(int i=0;i<M;i++) {
+			int[] currentNode = new int[2];
+			currentNode[0] = edgeList[i][0];
+			currentNode[1] = edgeList[i][1];
+			int degreeProduct = degree[currentNode[0]]*degree[currentNode[1]];
+			double powered_degreeProduct = Math.pow(degreeProduct, alpha);
+			weight[i] = powered_degreeProduct;
+		}
+	}
+
+	/**
+	 * 重みに僅かなブレwidth分ブレさせる
+	 */
+	public void exec_weightDisturb(long seed) {
+		double smallNumber = 1E-6;
+		Random rnd = new Random(seed);
+		for(int i=0 ; i<weight.length ; i++) {
+			weight[i] = weight[i] * (1 + rnd.nextDouble()*smallNumber);
+		}
+	}
 
 
 	/**
