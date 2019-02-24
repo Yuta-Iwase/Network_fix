@@ -95,34 +95,45 @@ public class Network {
 	}
 
 	/**
-	 * edgeListを基にneightborList, addressList, neightborIndexListを定義する関数。
+	 * edgeListを基にneightborList, addressList, neightborIndexListを定義する関数。<br>
+	 * @param overwrite 真の場合、すでにneightborListが定義済み、それを上書きして再定義する。
+	 */
+	public void set_neightbor(boolean overwrite){
+		if(neightborList == null){
+			// addressList初期化
+			addressList = new int[N];
+			addressList[0] = 0;
+			for(int i=1;i<N;i++){
+				addressList[i] = addressList[i-1] + degree[i-1];
+			}
+
+			// neightborListをどこまで埋めたか管理する変数
+			int[] cursor = new int[N];
+			for(int i=0;i<N;i++) cursor[i]=addressList[i];
+
+			// edgeListを参照してneightborListを生成
+			neightborList = new int[M*2];
+			neightborIndexList = new int[M*2];
+			for(int i=0;i<M;i++) neightborIndexList[i]=-123456;
+			for(int i=0;i<M;i++){
+				int left = edgeList[i][0];
+				int right = edgeList[i][1];
+				neightborList[cursor[left]] = right;
+				neightborList[cursor[right]] = left;
+				neightborIndexList[cursor[left]] = i;
+				neightborIndexList[cursor[right]] = i;
+				cursor[left]++;
+				cursor[right]++;
+			}
+		}
+
+	}
+
+	/**
+	 * edgeListを基にneightborList, addressList, neightborIndexListを定義する関数。<br>
 	 */
 	public void set_neightbor(){
-		// addressList初期化
-		addressList = new int[N];
-		addressList[0] = 0;
-		for(int i=1;i<N;i++){
-			addressList[i] = addressList[i-1] + degree[i-1];
-		}
-
-		// neightborListをどこまで埋めたか管理する変数
-		int[] cursor = new int[N];
-		for(int i=0;i<N;i++) cursor[i]=addressList[i];
-
-		// edgeListを参照してneightborListを生成
-		neightborList = new int[M*2];
-		neightborIndexList = new int[M*2];
-		for(int i=0;i<M;i++) neightborIndexList[i]=-123456;
-		for(int i=0;i<M;i++){
-			int left = edgeList[i][0];
-			int right = edgeList[i][1];
-			neightborList[cursor[left]] = right;
-			neightborList[cursor[right]] = left;
-			neightborIndexList[cursor[left]] = i;
-			neightborIndexList[cursor[right]] = i;
-			cursor[left]++;
-			cursor[right]++;
-		}
+		set_neightbor(false);
 	}
 
 	/**
