@@ -3,7 +3,7 @@ public class Exam_degreeDistribution {
 
 	public static void main(String[] args) {
 		int N = 10000;
-		MakePowerLaw dist = new MakePowerLaw(N, 2.7, 2, N/10);
+		MakePowerLaw dist = new MakePowerLaw(N, 2.7, 2, N/10, 123);
 		ConfigurationNetwork net = new ConfigurationNetwork(dist.degree, 100, System.currentTimeMillis());
 
 		int[] degreeFreq = new int[N+1];

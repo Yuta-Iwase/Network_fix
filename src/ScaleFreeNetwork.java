@@ -13,7 +13,7 @@ public class ScaleFreeNetwork extends Network{
 	 */
 	public ScaleFreeNetwork(int N, double gamma, int minDegree, int maxDegree, int loopLimit, long seed) {
 		do {
-			MakePowerLaw dist = new MakePowerLaw(N, gamma, minDegree, maxDegree);
+			MakePowerLaw dist = new MakePowerLaw(N, gamma, minDegree, maxDegree, seed);
 			ConfigurationNetwork.generate(this, dist.degree, loopLimit, seed);
 		}while(!success);
 	}

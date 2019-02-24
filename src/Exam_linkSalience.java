@@ -7,7 +7,7 @@ public class Exam_linkSalience {
 		double alpha = 1.5;
 
 		long seed = System.currentTimeMillis();
-		MakePowerLaw dist = new MakePowerLaw(N, gamma, 2, N/10);
+		MakePowerLaw dist = new MakePowerLaw(N, gamma, 2, N/10, 123);
 		ConfigurationNetwork net = new ConfigurationNetwork(dist.degree, 100, seed);
 
 		net.set_neightbor();

@@ -1,4 +1,4 @@
-
+import java.util.Random;
 
 public class MakePowerLaw {
 	/** 次数列 */
@@ -8,22 +8,24 @@ public class MakePowerLaw {
 	int N;
 	double gamma;
 	int minDegree,maxDegree;
+	long seed;
 	double[] c;
 
 	/**
-	 * 頂点数N, べき指数gamma, 最小次数minDegree, 最大次数maxDegreeの次数列を生成する。<br>
+	 * 頂点数N, べき指数gamma, 最小次数minDegree, 最大次数maxDegreeでのべき分布に従う次数列を生成する。<br>
 	 * 次数列へのアクセスは、このオブジェクトのint[] degreeを取得すればよい。
 	 * @param N 頂点数
 	 * @param gamma べき指数
 	 * @param minDegree 最小次数
 	 * @param maxDegree 最大次数
 	 */
-	public MakePowerLaw(int N, double gamma, int minDegree, int maxDegree) {
+	public MakePowerLaw(int N, double gamma, int minDegree, int maxDegree, long seed) {
 		// 変数代入
 		this.N = N;
 		this.gamma = gamma;
 		this.minDegree = minDegree;
 		this.maxDegree = maxDegree;
+		this.seed = seed;
 		// 生成
 		generate();
 	}
@@ -57,10 +59,10 @@ public class MakePowerLaw {
 		// c[i]に従い次数列degree[i]生成
 		degree = new int[N];
 		int currentIndex;
-		double r;
+		Random rnd = new Random(seed);
 		double nextLeft,nextRight;
 		for(int i=0;i<N;i++){
-			r = Math.random();
+			double r = rnd.nextDouble();
 			currentIndex = 0;
 			nextLeft = 0;
 			nextRight = c[minDegree];
