@@ -13,24 +13,31 @@ public class Network {
 
 	/**
 	 * 辺リスト<br>
-	 * edgeList[i][0],edgeList[i][1]はi番目の辺の頂点番号を表す。
+	 * edgeList[i][0],edgeList[i][1]はi番目の辺の頂点番号を表す。<br>
 	 */
 	int[][] edgeList;
 
-	//// 新設
+	/**
+	 * neightborList[addressList[i]+0], neightborList[addressList[i]+1],...は頂点iの隣接頂点を表す。<br>
+	 */
 	int[] neightborList = null;
 	int[] addressList = null;
+	/**
+	 * neightborIndexList[addressList[i]+0], neightborIndexList[addressList[i]+1],...は頂点iが持つ辺番号を表す。<br>
+	 * neightborListとは連動していて、隣接頂点neightborList[addressList[i]+0]へと
+	 * 続く辺はneightborIndexList[addressList[i]+0]である。<br>
+	 */
 	int[] neightborIndexList = null;
 
 	/**
 	 * 次数列<br>
-	 * degree[i]は頂点iの次数を表す。
+	 * degree[i]は頂点iの次数を表す。<br>
 	 */
 	int[] degree;
 
 	/**
 	 * 重みリスト<br>
-	 * weight[i]は辺iの重みを表す。
+	 * weight[i]は辺iの重みを表す。<br>
 	 */
 	double[] weight;
 
@@ -42,14 +49,19 @@ public class Network {
 	/** ccIDList[i]は頂点iが所属する連結成分のindexを表す。 */
 	int[] ccIDList;
 
-
-	// 各頂点のDirect,In-direct破壊されているかの情報
+	/**
+	 *  各頂点のDirect,In-direct破壊されているかの情報
+	 */
 	boolean[] directDeleted;
 	boolean[] indirectDeleted;
 
-	// Direct,In-direct破壊でのN,D,I,DI,NIの各連結成分データ
-	// TODO ここ書き直し
+	/**
+	 * Direct,In-direct破壊でのN,D,I,DI,NIの各連結成分データ
+	 */
 	ArrayList<ArrayList<Integer>> ccMember_NDI;
+	/**
+	 * connectedCompornentNDIメソッドにて計測された最大連結成分サイズ
+	 */
 	int max_ccSize_NDI;
 
 	/**
@@ -76,13 +88,11 @@ public class Network {
 	 */
 	int[] linkSalience;
 
-
 	/**
 	 * このネットワークが正しく生成されているのか、判定する真偽値<br>
 	 * 主にconfigurationで用いる。<br>
 	 */
 	boolean success;
-
 
 
 	/** 辺リストをコンソールへプリント */
@@ -109,6 +119,7 @@ public class Network {
 			System.out.println(e);
 		}
 	}
+
 
 	/**
 	 * edgeListを基にneightborList, addressList, neightborIndexListを定義する関数。<br>
@@ -152,8 +163,10 @@ public class Network {
 		set_neightbor(false);
 	}
 
+
 	/**
 	 * 連結成分の解析を行う。<br>
+	 * <b>(注)</b>neightborListを定義していないと、実行することはできません。<br>
 	 */
 	public void calc_connectedCompornent() {
 		ccCount = 0;
@@ -196,9 +209,6 @@ public class Network {
 			ccCount++;
 		}
 	}
-
-
-
 
 
 	/**
@@ -246,15 +256,15 @@ public class Network {
 	}
 
 
-
 	/**
 	 * メソッドexec_sitePercolationNDIで計算したN,D,I情報を基に、それらでできる連結成分を解析する。<br>
 	 * 3つのフラグcompN, compD, compIにより探索する連結成分を決める。<br>
 	 * 例えば、compN=true, compD=false, compI=falseならNコンポーネントを計算する。<br>
 	 * compN=false, compD=true, compI=trueならDIコンポーネントを計算する。<br>
-	 * @param compN
-	 * @param compD
-	 * @param compI
+	 * <b>(注)</b>neightborListを定義していないと、実行することはできません。<br>
+	 * @param compN 真ならNの頂点を含む連結成分を計測する
+	 * @param compD 真ならDの頂点を含む連結成分を計測する
+	 * @param compI 真ならIの頂点を含む連結成分を計測する
 	 */
 	public void calc_connectedCompornentNDI(boolean compN, boolean compD, boolean compI) {
 		// 変数codeで引数の情報を整理する。
@@ -276,7 +286,7 @@ public class Network {
 			break;
 		case 7:
 			System.out.println("これでは全頂点での連結成分を調べてしまいます。");
-			System.out.println("ConnectedCompornentメソッドを使ってください。");
+			System.out.println("calc_connectedCompornentメソッドを使ってください。");
 			valid=false;
 			break;
 		}
@@ -359,7 +369,16 @@ public class Network {
 	}
 
 
-	// TODO ここにjavadoc
+	/**
+	 * biased random walkを用いて重み付けを行う。<br>
+	 * 頂点iにいるwalkerが隣接点jへ転移する確率T_{ij}はT_{ij} \propto {k_j}^alpha である。<br>
+	 * walkerが辺を通過するごとに重みは1ずつ加算されていく。<br>
+	 * <b>(注)</b>neightborListを定義していないと、実行することはできません。<br>
+	 * @param step random walkのステップ回数
+	 * @param alpha biased RWにおける次数との相関の強度
+	 * @param teleportP 各ステップ毎にネットワーク上の任意の頂点にテレポートする確率
+	 * @param seed 乱数シード
+	 */
 	public void set_weight_by_BiasedRW(int step, double alpha, double teleportP, long seed) {
 		Random rnd = new Random(seed);
 
@@ -404,7 +423,16 @@ public class Network {
 		}
 	}
 
-	// TODO ここにjavadoc
+	/**
+	 * reinforced random walkを用いて重み付けを行う。<br>
+	 * 頂点iにいるwalkerが隣接点jへ転移する確率T_{ij}はT_{ij} \propto w_{ij} である。<br>
+	 * walkerが辺を通過するごとに重みはdeltaWずつ加算されていく。<br>
+	 * <b>(注)</b>neightborListを定義していないと、実行することはできません。<br>
+	 * @param step random walkのステップ回数
+	 * @param deltaW walkerが通過するごとに加算される重み
+	 * @param teleportP 各ステップ毎にネットワーク上の任意の頂点にテレポートする確率
+	 * @param seed 乱数シード
+	 */
 	public void set_weight_by_reinforcedRW(int step, double deltaW, double teleportP, long seed) {
 		Random rnd = new Random(seed);
 
@@ -456,7 +484,7 @@ public class Network {
 
 	/**
 	 * 重みを僅かにブレさせる
-	 * @param seed
+	 * @param seed 乱数シード
 	 */
 	public void exec_weightDisturb(long seed) {
 		double smallNumber = 1E-6;
@@ -469,10 +497,9 @@ public class Network {
 
 	/**
 	 * 重みをシャッフルする。<br>
-	 * TODO フィッシャーイェーツのくじ箱構造を利用することで、効率化できる可能性がある。<br>
-	 * @param seed
+	 * @param seed 乱数シード
 	 */
-	public void weightShuffle(int seed) {
+	public void exec_weightShuffle(int seed) {
 		if(weight.length>0) {
 			ArrayList<Double>  weightList = new ArrayList<Double>();
 			for(int i=0;i<weight.length;i++) {
@@ -490,10 +517,9 @@ public class Network {
 	}
 
 
-
-
 	/**
-	 * 頂点と辺の媒介中心性を測定する。
+	 * 頂点と辺の媒介中心性を測定する。<br>
+	 * <b>(注)</b>neightborListを定義していないと、実行することはできません。<br>
 	 */
 	public void calc_betweenness(){
 		if(weight==null || weight.length<=0) {
@@ -526,7 +552,6 @@ public class Network {
 
 		// contentQueue[i]=trueならば、頂点iはqueueに入っていることを示す。
 		// これを用いて『insert/update w』を実行する。
-		// TODO ここ、もっとよくかけるんじゃないか?
 		boolean[] contentQueue = new boolean[N];
 
 		nodeBetweenness = new double[N];
@@ -535,7 +560,6 @@ public class Network {
 		// 論文のラムダに相当する配列
 		double[] inv_weight = new double[M];
 		for(int i=0;i<M;i++) inv_weight[i] = 1.0/weight[i];
-
 
 		for(int s=0 ; s<N ; s++){
 			//// single-source shortest-paths problem
@@ -624,7 +648,6 @@ public class Network {
 			}
 		}
 
-
 	}
 
 
@@ -632,7 +655,8 @@ public class Network {
 	 * link salienceを計算する。<br>
 	 * このアルゴリズムは『Robust classification of salient links in complex networks』のサプリメントに載っているものを参考にしている。<br>
 	 * URL:
-	 * https://media.nature.com/original/nature-assets/ncomms/journal/v3/n5/extref/ncomms1847-s1.pdf
+	 * https://media.nature.com/original/nature-assets/ncomms/journal/v3/n5/extref/ncomms1847-s1.pdf<br>
+	 * <b>(注)</b>neightborListを定義していないと、実行することはできません。<br>
 	 */
 	public void calc_linkSalience(){
 		// 正しく定義されていない場合、強制終了させる。
@@ -666,7 +690,6 @@ public class Network {
 
 		// contentQueue[i]=trueならば、頂点iはqueueに入っていることを示す。
 		// これを用いて『insert/update w』を実行する。
-		// TODO ここ、もっとよくかけるんじゃないか?
 		boolean[] contentQueue = new boolean[N];
 
 		// 論文のラムダに相当する配列
@@ -752,20 +775,5 @@ public class Network {
 		}
 
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
