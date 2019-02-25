@@ -53,10 +53,26 @@ public class Network {
 	int max_ccSize_NDI;
 
 	/**
+	 * calc_betweenness()メソッドを実行することで数値が与えられる。<br>
+	 * nodeBetweenness[i]=(頂点iの媒介中心性)×(N*(N-1)/2)<br>
+	 * が与えられている。<br>
+	 * node betweennessそのものではなく、(N*(N-1)/2)倍であることに注意すること。<br>
+	 */
+	double[] nodeBetweenness;
+
+	/**
+	 * calc_betweenness()メソッドを実行することで数値が与えられる。<br>
+	 * edgeBetweenness[i]=(辺iの媒介中心性)×(N*(N-1)/2)<br>
+	 * が与えられている。<br>
+	 * edge betweennessそのものではなく、(N*(N-1)/2)倍であることに注意すること。<br>
+	 */
+	double[] edgeBetweenness;
+
+	/**
 	 * calc_linkSalience()メソッドを実行することで数値が与えられる。<br>
 	 * linkScalience[i]=(頂点iのlink salience)×N<br>
 	 * が与えられている。<br>
-	 * link salienceそのものではなく、N倍であることに注意すること。
+	 * link salienceそのものではなく、N倍であることに注意すること。<br>
 	 */
 	int[] linkSalience;
 
@@ -471,6 +487,144 @@ public class Network {
 				weightList.remove(r);
 			}
 		}
+	}
+
+
+
+
+	/**
+	 * 頂点と辺の媒介中心性を測定する。
+	 */
+	public void calc_betweenness(){
+		if(weight==null || weight.length<=0) {
+			weight = new double[M];
+			for(int i=0;i<M;i++) weight[i]=1.0;
+		}
+		if(neightborList==null || neightborList.length<=0) {
+			System.out.println("neighborListが正しく定義されていません。プログラムを終了します。");
+			System.exit(1);
+		}
+
+		ArrayList<Integer> queue = new ArrayList<Integer>();
+		ArrayList<Integer> stack = new ArrayList<Integer>();
+
+		double[] sigma = new double[N];
+		double[] delta = new double[N];
+		for(int i=0;i<N;i++)sigma[i]=0;
+
+		//distance from source
+		double[] dist = new double[N];
+
+		//list of predecessors on shortest paths from source
+		// Pred:sから各頂点への最短路において一つ前の頂点番号を格納するリスト
+		// 最短路が複数ある場合に対応するためにPredは少々複雑な構造をしている。
+		// PredとPredCursorを組み合わせて使う。
+		int[] Pred = new int[2*M];
+		int[] PredCursor = new int[N];
+		// PredIndex:一つ前の頂点へと結ぶ辺番号を返す。
+		int[] PredIndex = new int[2*M];
+
+		// contentQueue[i]=trueならば、頂点iはqueueに入っていることを示す。
+		// これを用いて『insert/update w』を実行する。
+		// TODO ここ、もっとよくかけるんじゃないか?
+		boolean[] contentQueue = new boolean[N];
+
+		nodeBetweenness = new double[N];
+		edgeBetweenness = new double[M];
+
+		// 論文のラムダに相当する配列
+		double[] inv_weight = new double[M];
+		for(int i=0;i<M;i++) inv_weight[i] = 1.0/weight[i];
+
+
+		for(int s=0 ; s<N ; s++){
+			//// single-source shortest-paths problem
+			// initialization
+			for(int i=0;i<N;i++) PredCursor[i]=addressList[i]; //PredCursor初期化(事実上のPred初期化)
+			for(int i=0;i<N;i++) dist[i]=Double.MAX_VALUE;
+			for(int i=0;i<N;i++) contentQueue[i]=false;
+			for(int i=0;i<N;i++) sigma[i]=0;
+
+			dist[s] = 0;
+			sigma[s] = 1;
+			queue.add(s);
+			contentQueue[s] = true;
+
+			while(!queue.isEmpty()){
+				// queueからdist[v]が最小となるものを取り出す
+				double minDis = Double.MAX_VALUE;
+				int v = -1;
+				int minIndex = -1;
+				for(int i=0;i<queue.size();i++){
+					if(minDis > dist[queue.get(i)]){
+						minDis = dist[queue.get(i)];
+						v = queue.get(i);
+						minIndex = i;
+					}
+				}
+				queue.remove(minIndex);
+				contentQueue[v] = false;
+				stack.add(v);
+
+				final int vAddress = addressList[v];
+				for(int neighbor=0 ; neighbor<degree[v] ; neighbor++){
+					final int currentCursor = vAddress + neighbor;
+					int w = neightborList[currentCursor];
+					// path discovery
+					int vwEdge = neightborIndexList[currentCursor];
+					if(dist[w] > dist[v] + inv_weight[vwEdge]){
+						dist[w] = dist[v] + inv_weight[vwEdge];
+
+						// insert/update w
+						if(contentQueue[w]) {
+							for(int i=0;i<queue.size();i++){
+								if(queue.get(i) == w){
+									queue.remove(i);
+									break;
+								}
+							}
+						}
+						queue.add(w);
+						contentQueue[w] = true;
+
+						sigma[w] = 0;
+
+						PredCursor[w] = addressList[w];
+					}
+					//path counting
+					if(dist[w] == dist[v]+inv_weight[vwEdge]){
+						sigma[w] = sigma[w] + sigma[v];
+						Pred[PredCursor[w]] = v;
+						PredIndex[PredCursor[w]] = vwEdge;
+						PredCursor[w]++;
+					}
+				}
+			}
+
+			for(int i=0;i<delta.length;i++)delta[i]=0.0;
+
+			//// accumulation
+			while(!stack.isEmpty()){
+				int w = stack.get(stack.size()-1);
+				stack.remove(stack.size()-1);
+
+				final int PredSize = PredCursor[w]-addressList[w];
+				for(int i=0 ; i<PredSize ; i++){
+					int v = Pred[addressList[w]+i];
+
+					int vwEdge = PredIndex[addressList[w]+i];
+					double c = (sigma[v]/sigma[w]) * (1.0+delta[w]);
+					edgeBetweenness[vwEdge] += c;
+					delta[v] = delta[v] + c;
+				}
+
+				if(w!=s){
+					nodeBetweenness[w] = nodeBetweenness[w] + delta[w];
+				}
+			}
+		}
+
+
 	}
 
 
