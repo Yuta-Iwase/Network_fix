@@ -341,7 +341,7 @@ public class Network {
 	}
 
 
-
+	// TODO ここにjavadoc
 	public void set_weight_by_BiasedRW(int step, double alpha, double teleportP, long seed) {
 		Random rnd = new Random(seed);
 
@@ -384,7 +384,55 @@ public class Network {
 			}
 
 		}
+	}
 
+	// TODO ここにjavadoc
+	public void set_weight_by_reinforcedRW(int step, double deltaW, double teleportP, long seed) {
+		Random rnd = new Random(seed);
+
+		weight = new double[M];
+		for(int i=0;i<M;i++) weight[i]=1.0;
+
+		double[] sumW = new double[N];
+		for(int i=0;i<N;i++){
+			sumW[i]= (double)degree[i];
+		}
+
+		int currentNode = rnd.nextInt(N);
+		for(int t=0;t<step;t++){
+			if(degree[currentNode]>=1) {
+				// ここが各ランダムウォークで変化する内容(辺の選択方法)
+				double r = (sumW[currentNode]*rnd.nextDouble());
+				int selectedEdgeOrder = 0;
+				int selectedEdge = neightborIndexList[addressList[currentNode]];
+				double threshold = weight[selectedEdge];
+				while(r > threshold){
+					selectedEdgeOrder++;
+					selectedEdge = neightborIndexList[addressList[currentNode]+selectedEdgeOrder];
+					threshold += weight[selectedEdge];
+				}
+
+				// 加重
+				int throughEdgeIndex = neightborIndexList[addressList[currentNode]+selectedEdgeOrder];
+				weight[throughEdgeIndex] += deltaW;
+				sumW[edgeList[selectedEdge][0]] += deltaW;
+				sumW[edgeList[selectedEdge][1]] += deltaW;
+
+				// 隣接点へ遷移
+				currentNode = neightborList[addressList[currentNode]+selectedEdgeOrder];
+			}else {
+				// 次数0なら確定ワープ
+				t--;
+				currentNode = rnd.nextInt(N);
+				continue;
+			}
+
+			// テレポート判定
+			if(rnd.nextDouble() < teleportP){
+				currentNode = rnd.nextInt(N);
+			}
+
+		}
 	}
 
 
@@ -402,7 +450,8 @@ public class Network {
 
 
 	/**
-	 * 重みをシャッフルする
+	 * 重みをシャッフルする。<br>
+	 * TODO フィッシャーイェーツのくじ箱構造を利用することで、効率化できる可能性がある。<br>
 	 * @param seed
 	 */
 	public void weightShuffle(int seed) {
