@@ -99,7 +99,7 @@ public class Network {
 	 * @param overwrite 真の場合、すでにneightborListが定義済み、それを上書きして再定義する。
 	 */
 	public void set_neightbor(boolean overwrite){
-		if(neightborList == null){
+		if(neightborList == null || overwrite){
 			// addressList初期化
 			addressList = new int[N];
 			addressList[0] = 0;
@@ -196,7 +196,9 @@ public class Network {
 	 * @param f 故障確率
 	 * @param chain 連鎖故障させるか?
 	 */
-	public void exec_sitePercolationNDI(double f,boolean chain) {
+	public void exec_sitePercolationNDI(double f, boolean chain, long seed) {
+		Random rnd = new Random(seed);
+
 		// D,I情報初期化
 		for(int i=0;i<N;i++) {
 			directDeleted[i] = false;
@@ -205,7 +207,7 @@ public class Network {
 		// D情報を計算。連鎖故障フラグ(boolean chain)がtrueなら、I情報も計算。
 		for(int i=0;i<N;i++) {
 			int currentNode = i;
-			if(Math.random() < f) {
+			if(rnd.nextDouble() < f) {
 				directDeleted[currentNode] = true;
 				if(chain) {
 					for(int j=0;j<degree[currentNode];j++) {
@@ -215,7 +217,7 @@ public class Network {
 				}
 			}
 		}
-		// 現状、D=trueかつI=trueであることがある。
+		// 処理の関係上、D=trueかつI=trueであることがある。
 		// その場合、D=true,I=falseとする。
 		for(int i=0;i<N;i++) {
 			int currentNode = i;
@@ -340,11 +342,11 @@ public class Network {
 
 
 
-	public void BiasedRandomWalk(int step, double alpha, double teleportP, long seed) {
+	public void set_weight_by_BiasedRW(int step, double alpha, double teleportP, long seed) {
 		Random rnd = new Random(seed);
 
-		double[] newWeight = new double[M];
-		for(int i=0;i<M;i++) newWeight[i]=1.0;
+		weight = new double[M];
+		for(int i=0;i<M;i++) weight[i]=1.0;
 
 		int currentNode = rnd.nextInt(N);
 		for(int t=0;t<step;t++){
@@ -365,7 +367,7 @@ public class Network {
 
 				// 加重
 				int throughEdgeIndex = neightborIndexList[addressList[currentNode]+selectedEdge];
-				newWeight[throughEdgeIndex] += 1.0;
+				weight[throughEdgeIndex] += 1.0;
 
 				// 隣接点へ遷移
 				currentNode = neightborList[addressList[currentNode]+selectedEdge];
@@ -377,15 +379,12 @@ public class Network {
 			}
 
 			// テレポート判定
-			if(Math.random() < teleportP){
+			if(rnd.nextDouble() < teleportP){
 				currentNode = rnd.nextInt(N);
 			}
 
 		}
 
-		for(int i=0;i<M;i++){
-			weight[i] = newWeight[i];
-		}
 	}
 
 
