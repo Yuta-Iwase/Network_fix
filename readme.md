@@ -1,6 +1,10 @@
 <!-- 数式生成には https://www.codecogs.com/latex/eqneditor.php が便利 -->
 
 # 使い方
+## ダウンロード
+[ここ](https://github.com/Yuta-Iwase/Network_fix/archive/master.zip)からダウンロードできる。
+srcフォルダーにプログラムが入っている。
+
 ## 概要
 このプロジェクトのプログラムを使うことで、ネットワークの生成と解析を行うことができる。
 生成できる主なネットワークと解析は以下の通りである。
