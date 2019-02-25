@@ -200,6 +200,8 @@ public class Network {
 		Random rnd = new Random(seed);
 
 		// D,I情報初期化
+		directDeleted = new boolean[N];
+		indirectDeleted = new boolean[N];
 		for(int i=0;i<N;i++) {
 			directDeleted[i] = false;
 			indirectDeleted[i] = false;
