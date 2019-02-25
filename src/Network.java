@@ -388,15 +388,37 @@ public class Network {
 	}
 
 
-
 	/**
-	 * 重みに僅かなブレwidth分ブレさせる
+	 * 重みを僅かにブレさせる
+	 * @param seed
 	 */
 	public void exec_weightDisturb(long seed) {
 		double smallNumber = 1E-6;
 		Random rnd = new Random(seed);
 		for(int i=0 ; i<weight.length ; i++) {
 			weight[i] = weight[i] * (1 + rnd.nextDouble()*smallNumber);
+		}
+	}
+
+
+	/**
+	 * 重みをシャッフルする
+	 * @param seed
+	 */
+	public void weightShuffle(int seed) {
+		if(weight.length>0) {
+			ArrayList<Double>  weightList = new ArrayList<Double>();
+			for(int i=0;i<weight.length;i++) {
+				weightList.add(weight[i]);
+			}
+
+			Random rnd = new Random(seed);
+			int r;
+			for(int i=0;i<weight.length;i++) {
+				r = rnd.nextInt(weightList.size());
+				weight[i] = weightList.get(r);
+				weightList.remove(r);
+			}
 		}
 	}
 
