@@ -79,6 +79,7 @@ public class Exam_degreeDistribution {
 ```
 この例のように、ネットワークの生成自体は1行で行うことができる。
 このように新たなクラスを作成し、ライブラリを用いて解析を行う。
+srcフォルダにある `Exam_○○` というプログラムはライブラリの使用例である。
 以下は主要なプログラム例を記載する。
 
 ### obserbability解析
@@ -220,3 +221,117 @@ public class Exam_linkSalience {
 
 }
 ```
+
+
+## ライブラリ
+### ○Network.class
+ネットワークを取り扱う際、プログラムの基盤となるクラス。
+setを冠するメソッドは変数の定義、
+calcを冠するメソッドは指標の計算、
+execを冠するメソッドはネットワークを用いた処理や変形を行う。
+
+#### exec_printEdgeList
+引数:なし、または(String)<br>
+内容:<br>
+引数なしならコンソールに、引数ありなら指定したファイルに辺リストのデータを書き込める。
+このメソッドで保存したファイルはCSVFileNetwork.classで読み込む事もできる。
+
+#### set_neightbor
+引数:なし、または(boolean)<br>
+内容:<br>
+隣接頂点の情報を記憶したneightborList, addressList, neightborIndexListを定義する。
+引数がtrueの場合、すでにneightborListが定義済みでも上書きして新たなneightborListを生成する。
+逆に引数なし及びfalseの場合、すでにneightborListが定義済みならなにもしない。
+
+#### calc_connectedCompornent
+引数:なし<br>
+内容:<br>
+連結成分を解析する。
+このメソッドを実行後、
+連結成分の個数ccCountと各頂点がどの連結成分に所属しているか記憶した配列ccIDList
+が使用できるようになる。
+
+#### exec_sitePercolationNDI
+引数:(double f, boolean chain, long seed)<br>
+内容:<br>
+「Observability transitions in clustered networks」用にサイトパーコレーションを拡張したメソッドである。
+通常のパーコレーションの処理に加え、連鎖故障の処理を加えている。
+連鎖故障をしたければ、引数名chainをtrueにすれば良い。
+逆にchainをfalseにすれば、通常のサイトパーコレーションになる。<br>
+<b>(注1)</b>neightborListを定義していないと、実行することはできません。<br>
+<b>(注2)</b>このメソッドでは、故障情報directDeleted, indirectDeletedを計算しているだけで、
+		実際にデータから頂点データが失われるわけではない。<br>
+f:故障確率<br>
+chain:連鎖故障させるか<br>
+
+
+#### calc_connectedCompornentNDI
+引数:(boolean compN, boolean compD, boolean compI)<br>
+内容:<br>
+メソッドexec_sitePercolationNDIで計算したN,D,I情報を基に、それらでできる連結成分を解析する。
+3つのフラグcompN, compD, compIにより探索する連結成分を決める。
+例えば、compN=true, compD=false, compI=falseならNコンポーネントを計算する。
+compN=false, compD=true, compI=trueならDIコンポーネントを計算する。<br>
+<b>(注)</b>neightborListを定義していないと、実行することはできません。<br>
+compN:真ならNの頂点を含む連結成分を計測する<br>
+compD:真ならDの頂点を含む連結成分を計測する<br>
+compI:真ならIの頂点を含む連結成分を計測する<br>
+
+#### set_weightToAlpha
+引数:(double alpha)<br>
+内容:<br>
+重みw_{ij}を、w_{ij} \propto {k_i k_j}^alphaになるように割り振る。<br>
+alpha:次数との相関の強度
+
+#### set_weight_by_BiasedRW
+引数:(int step, double alpha, double teleportP, long seed)<br>
+内容:<br>
+biased random walkを用いて重み付けを行う。
+頂点iにいるwalkerが隣接点jへ転移する確率T_{ij}はT_{ij} \propto {k_j}^alpha である。
+walkerが辺を通過するごとに重みは1ずつ加算されていく。<br>
+<b>(注)</b>neightborListを定義していないと、実行することはできません。<br>
+step:random walkのステップ回数<br>
+alpha:biased RWにおける次数との相関の強度<br>
+teleportP:各ステップ毎にネットワーク上の任意の頂点にテレポートする確率<br>
+seed:乱数シード<br>
+
+#### set_weight_by_BiasedRW
+引数:(int step, double alpha, double teleportP, long seed)<br>
+内容:<br>
+biased random walkを用いて重み付けを行う。
+頂点iにいるwalkerが隣接点jへ転移する確率T_{ij}はT_{ij} \propto {k_j}^alpha である。
+walkerが辺を通過するごとに重みは1ずつ加算されていく。<br>
+<b>(注)</b>neightborListを定義していないと、実行することはできません。<br>
+step:random walkのステップ回数<br>
+alpha:biased RWにおける次数との相関の強度<br>
+teleportP:各ステップ毎にネットワーク上の任意の頂点にテレポートする確率<br>
+seed:乱数シード<br>
+
+#### set_weight_by_reinforcedRW
+引数:(int step, double deltaW, double teleportP, long seed)<br>
+内容:<br>
+reinforced random walkを用いて重み付けを行う。
+頂点iにいるwalkerが隣接点jへ転移する確率T_{ij}はT_{ij} \propto w_{ij} である。
+walkerが辺を通過するごとに重みはdeltaWずつ加算されていく。<br>
+<b>(注)</b>neightborListを定義していないと、実行することはできません。<br>
+step random walkのステップ回数<br>
+deltaW walkerが通過するごとに加算される重み<br>
+teleportP 各ステップ毎にネットワーク上の任意の頂点にテレポートする確率<br>
+seed 乱数シード<br>
+
+#### exec_weightDisturb
+引数:(long seed)<br>
+内容:<br>
+各重みにほぼ1に近い乱数を掛けてわずかにブレさせる。<br>
+seed:乱数シード<br>
+
+#### exec_weightShuffle
+引数:(long seed)<br>
+内容:<br>
+重みをシャッフルする。<br>
+seed:乱数シード<br>
+
+
+
+
+
