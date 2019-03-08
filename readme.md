@@ -224,11 +224,20 @@ public class Exam_linkSalience {
 
 
 ## ライブラリ
-### <span style="border-bottom: solid 2px orange !important;">○Network.class</span>
+
+### クラス関係図
+![](src/classFlowChart.png)
+
+Network.classはネットワークを解析するメソッドを持つクラスで、
+末尾にNetworkを持つクラスはネットワークを生成するためのクラスである。
+これらを活用してExam_○○クラスを作成してネットワークの解析を行う。
+
+### ○Network.class
 ネットワークを取り扱う際、プログラムの基盤となるクラス。
 setを冠するメソッドは変数の定義、
 calcを冠するメソッドは指標の計算、
 execを冠するメソッドはネットワークを用いた処理や変形を行う。
+
 
 #### ●exec_printEdgeList
 引数:なし、または(String)<br>
