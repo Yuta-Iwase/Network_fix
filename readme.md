@@ -224,26 +224,26 @@ public class Exam_linkSalience {
 
 
 ## ライブラリ
-### ○Network.class
+### <span style="border-bottom: solid 2px orange !important;">○Network.class</span>
 ネットワークを取り扱う際、プログラムの基盤となるクラス。
 setを冠するメソッドは変数の定義、
 calcを冠するメソッドは指標の計算、
 execを冠するメソッドはネットワークを用いた処理や変形を行う。
 
-#### exec_printEdgeList
+#### ●exec_printEdgeList
 引数:なし、または(String)<br>
 内容:<br>
 引数なしならコンソールに、引数ありなら指定したファイルに辺リストのデータを書き込める。
 このメソッドで保存したファイルはCSVFileNetwork.classで読み込む事もできる。
 
-#### set_neightbor
+#### ●set_neightbor
 引数:なし、または(boolean)<br>
 内容:<br>
 隣接頂点の情報を記憶したneightborList, addressList, neightborIndexListを定義する。
 引数がtrueの場合、すでにneightborListが定義済みでも上書きして新たなneightborListを生成する。
 逆に引数なし及びfalseの場合、すでにneightborListが定義済みならなにもしない。
 
-#### calc_connectedCompornent
+#### ●calc_connectedCompornent
 引数:なし<br>
 内容:<br>
 連結成分を解析する。
@@ -251,7 +251,7 @@ execを冠するメソッドはネットワークを用いた処理や変形を�
 連結成分の個数ccCountと各頂点がどの連結成分に所属しているか記憶した配列ccIDList
 が使用できるようになる。
 
-#### exec_sitePercolationNDI
+#### ●exec_sitePercolationNDI
 引数:(double f, boolean chain, long seed)<br>
 内容:<br>
 「Observability transitions in clustered networks」用にサイトパーコレーションを拡張したメソッドである。
@@ -265,7 +265,7 @@ f:故障確率<br>
 chain:連鎖故障させるか<br>
 
 
-#### calc_connectedCompornentNDI
+#### ●calc_connectedCompornentNDI
 引数:(boolean compN, boolean compD, boolean compI)<br>
 内容:<br>
 メソッドexec_sitePercolationNDIで計算したN,D,I情報を基に、それらでできる連結成分を解析する。
@@ -277,13 +277,13 @@ compN:真ならNの頂点を含む連結成分を計測する<br>
 compD:真ならDの頂点を含む連結成分を計測する<br>
 compI:真ならIの頂点を含む連結成分を計測する<br>
 
-#### set_weightToAlpha
+#### ●set_weightToAlpha
 引数:(double alpha)<br>
 内容:<br>
 重みw_{ij}を、w_{ij} \propto {k_i k_j}^alphaになるように割り振る。<br>
 alpha:次数との相関の強度
 
-#### set_weight_by_BiasedRW
+#### ●set_weight_by_BiasedRW
 引数:(int step, double alpha, double teleportP, long seed)<br>
 内容:<br>
 biased random walkを用いて重み付けを行う。
@@ -295,7 +295,7 @@ alpha:biased RWにおける次数との相関の強度<br>
 teleportP:各ステップ毎にネットワーク上の任意の頂点にテレポートする確率<br>
 seed:乱数シード<br>
 
-#### set_weight_by_BiasedRW
+#### ●set_weight_by_BiasedRW
 引数:(int step, double alpha, double teleportP, long seed)<br>
 内容:<br>
 biased random walkを用いて重み付けを行う。
@@ -307,7 +307,7 @@ alpha:biased RWにおける次数との相関の強度<br>
 teleportP:各ステップ毎にネットワーク上の任意の頂点にテレポートする確率<br>
 seed:乱数シード<br>
 
-#### set_weight_by_reinforcedRW
+#### ●set_weight_by_reinforcedRW
 引数:(int step, double deltaW, double teleportP, long seed)<br>
 内容:<br>
 reinforced random walkを用いて重み付けを行う。
@@ -319,17 +319,32 @@ deltaW walkerが通過するごとに加算される重み<br>
 teleportP 各ステップ毎にネットワーク上の任意の頂点にテレポートする確率<br>
 seed 乱数シード<br>
 
-#### exec_weightDisturb
+#### ●exec_weightDisturb
 引数:(long seed)<br>
 内容:<br>
 各重みにほぼ1に近い乱数を掛けてわずかにブレさせる。<br>
 seed:乱数シード<br>
 
-#### exec_weightShuffle
+#### ●exec_weightShuffle
 引数:(long seed)<br>
 内容:<br>
 重みをシャッフルする。<br>
 seed:乱数シード<br>
+
+
+#### ●calc_betweenness
+引数:なし<br>
+内容:<br>
+媒介中心性を計算する。<br>
+計算後、nodeBetweennessとedgeBetweennessにそれぞれ頂点と辺の媒介中心性が格納される。<br>
+アルゴリズムは『A Faster Algorithm for Betweenness Centrality』を基にしている。<br>
+
+#### ●calc_linkSalience
+引数:なし<br>
+内容:<br>
+link salienceを計算する。<br>
+計算後、linkSalienceに各辺のlink salienceが格納される。<br>
+アルゴリズムは『Robust classification of salient links in complex networks』のサプリメントを基にしている。<br>
 
 
 
