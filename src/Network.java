@@ -499,19 +499,42 @@ public class Network {
 	 * 重みをシャッフルする。<br>
 	 * @param seed 乱数シード
 	 */
-	public void exec_weightShuffle(int seed) {
+	public void exec_weightShuffle(long seed) {
+		Random rnd = new Random(seed);
+
 		if(weight.length>0) {
-			ArrayList<Double>  weightList = new ArrayList<Double>();
-			for(int i=0;i<weight.length;i++) {
-				weightList.add(weight[i]);
+			// ArrayListを用いたシャッフルではシード値を指定した高速シャッフルが不可能なのでボツ
+//			ArrayList<Double>  weightList = new ArrayList<Double>();
+//			for(int i=0;i<weight.length;i++) {
+//				weightList.add(weight[i]);
+//			}
+//
+//			int r;
+//			for(int i=0;i<weight.length;i++) {
+//				r = rnd.nextInt(weightList.size());
+//				weight[i] = weightList.get(r);
+//				weightList.remove(r);
+//			}
+
+			// FisherYatesのシャッフルを導入した高速版
+			double[] boxFisherYates = new double[M];
+			for(int i=0;i<M;i++) {
+				boxFisherYates[i] = weight[i];
 			}
 
-			Random rnd = new Random(seed);
-			int r;
-			for(int i=0;i<weight.length;i++) {
-				r = rnd.nextInt(weightList.size());
-				weight[i] = weightList.get(r);
-				weightList.remove(r);
+			int rem = M;
+			for(int i=0;i<M;i++) {
+				int popIndex = rnd.nextInt(rem);
+				double pop = boxFisherYates[popIndex];
+
+				if(popIndex != rem-1) {
+					double temp = boxFisherYates[popIndex];
+					boxFisherYates[popIndex] = boxFisherYates[rem-1];
+					boxFisherYates[rem-1] = temp;
+				}
+
+				rem--;
+				weight[i] = pop;
 			}
 		}
 	}
