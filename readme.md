@@ -355,7 +355,67 @@ link salienceを計算する。<br>
 計算後、linkSalienceに各辺のlink salienceが格納される。<br>
 アルゴリズムは『Robust classification of salient links in complex networks』のサプリメントを基にしている。<br>
 
+### ○ConfigurationNetwork.class
+#### コンストラクタ
+引数:(int[] degreeSequence, int loopLimit, long seed)<br>
+与えられた次数列degreeSequenceに従うネットワークを構築する。<br>
+degreeSequence:次数列<br>
+loopLimit:スタブの結合に連続で失敗できる回数<br>
+seed:乱数シード<br>
 
+
+### ○RandomNetwork.class
+#### コンストラクタ
+引数:(int N, double p, int loopLimit, long seed)<br>
+ERモデルをconfigurationモデルの要領で生成する。<br>
+N:頂点数<br>
+p:頂点同士の接続確率<br>
+loopLimit:生成時のループ数の許容値<br>
+seed:乱数シード<br>
+
+
+### ○ScaleFreeNetwork.class
+#### コンストラクタ
+引数:(int N, double gamma, int minDegree, int maxDegree, int loopLimit, long seed)<br>
+configurationモデルで次数分布がべき分布であるネットワークを生成する。<br>
+N:頂点数<br>
+gamma:べき指数<br>
+minDegree:最小次数<br>
+maxDegree:最大次数<br>
+loopLimit:生成時のループ数の許容値<br>
+seed:乱数シード<br>
+
+
+### ○ConfigDMSNetwork.class
+#### コンストラクタ
+引数:(int N0, int N, int insertEdges, double gamma, int loopLimit, long seed)<br>
+DMSモデルで生成した次数列をもとにconfigurationモデルを作る。<br>
+N0:初期頂点数<br>
+N:最終的な頂点数<br>
+insertEdges:1つの頂点を追加する際に接続する辺の本数<br>
+gamma:べき指数<br>
+loopLimit:次数分布のリトライ回数<br>
+
+
+### ○RandomClusteredNetwork.class
+#### コンストラクタ
+引数:(int N0, int N, int insertEdges, double gamma, int loopLimit, long seed)<br>
+与えられた2つの次数列に従うrandom clustered networkを構築する。<br>
+詳細は、『Random graphs with clustering』、『Observability transitions in clustered networks』を参照。<br>
+s_degreeSequence:この次数列でできたスタブは、通常のconfigモデル同様、もうひとつのスタブとつなぐ。<br>
+t_degreeSequence:この次数列でできたスタブは、他の2つのスタブと相互間に接続し、三角形を形成する。<br>
+loopLimit:スタブの結合に連続で失敗できる回数<br>
+seed:シード値<br>
+
+
+### ○CSVFileNetwork.class
+#### コンストラクタ
+引数:(String inputFilePath, boolean weighted)<br>
+辺リストが記述されているCSVファイルを読み込みネットワークを生成する。<br>
+3列目に重みを載せることで重み付きネットワークを読み込むこともできる。<br>
+区切り文字は原則「,」だが、tab、半角スペースでも一応読み込み可能。<br>
+inputFilePath:CSVファイルのパス<br>
+weighted:読み込むネットワークが重み付きか?<br>
 
 
 
