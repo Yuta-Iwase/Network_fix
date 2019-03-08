@@ -1,10 +1,15 @@
 import java.io.File;
 import java.util.Scanner;
 
-
-
 public class CSVFileNetwork extends Network {
 
+	/**
+	 * 辺リストが記述されているCSVファイルを読み込みネットワークを生成する。<br>
+	 * 3列目に重みを載せることで重み付きネットワークを読み込むこともできる。<br>
+	 * 区切り文字は原則「,」だが、tab、半角スペースでも一応読み込み可能。<br>
+	 * @param inputFilePath CSVファイルのパス
+	 * @param weighted 読み込むネットワークが重み付きか?
+	 */
 	public CSVFileNetwork(String inputFilePath, boolean weighted) {
 		Scanner scan1 = null;
 		Scanner scan2 = null; //Mを測るためのScannerクラス
